@@ -1,4 +1,7 @@
 from requestHandler import RequestHandler
+from flask import Flask, jsonify, request as req
+
+app = Flask(__name__)
 
 @app.route("/recommend", methods = ["GET"])
 def recommend():
