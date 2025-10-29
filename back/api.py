@@ -8,10 +8,10 @@ def recommend():
 def train():
     return RequestHandler.train
 
-@app.route("/version")
+@app.route("/version", methods = ["GET"])
 def version():
     return RequestHandler.version
 
-@app.route("/test")
+@app.route("/test", methods = ["GET"])
 def test():
     return RequestHandler.test
