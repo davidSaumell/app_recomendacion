@@ -5,7 +5,8 @@ app = Flask(__name__)
 
 @app.route("/recommend", methods = ["GET"])
 def recommend():
-    return RequestHandler.recommend
+    data = req.get_json()
+    return RequestHandler.recommend(data)
 
 @app.route("/train", methods = ["PATCH"])
 def train():
