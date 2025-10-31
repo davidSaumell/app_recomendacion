@@ -59,3 +59,30 @@ def Train_model():
     }
     with open(version_file, "w") as f:
         json.dump(info, f, indent=4)
+
+def Load_model():
+    with open("models/current_model.json") as f:
+        info = json.load(f)
+    return pd.read_pickle(info["artifact_path"]) 
+
+def Get_recomendations(user_preferences):
+    corrMatrix = Load_model()
+
+    myRatings = pd.Series(user_preferences)
+    simCandidates = pd.Series(dtype='float64')
+
+    for anime_id, rating in myRatings.items():
+        if anime_id not in corrMatrix.columns:
+            continue       
+        sims = corrMatrix[anime_id].dropna()
+        sims = sims.map(lambda x: x * rating)
+        simCandidates = pd.concat([simCandidates, sims])
+
+    if simCandidates.empty:
+        return pd.DataFrame(columns=["anime_id", "score"])
+
+    simCandidates = simCandidates.groupby(simCandidates.index).sum()
+    simCandidates.sort_values(inplace=True, ascending=False)
+    filteredSims = simCandidates.drop(myRatings.index)
+    result = pd.DataFrame({"anime_id": filteredSims.index, "score": filteredSims.values})
+    return result[["anime_id", "score"]]
