@@ -3,6 +3,7 @@ from flask import jsonify
 
 BASE_URL = "http://127.0.0.1:5000"
 NUMBER_OF_ANIMES_TO_RATE = 3
+
 username = input("Escribe tu nombre de usuario: ")
 password = input("Escribe tu contraseña: ")
 
@@ -29,7 +30,6 @@ while loop:
     print(show_menu())
     option = input("Elija la opción: ")
     if option == "1":
-
         url = f"{BASE_URL}/list-anime/"
         response = requests.get(url)
 

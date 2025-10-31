@@ -1,7 +1,11 @@
+import connection as db
 from requestHandler import RequestHandler
 from flask import Flask, jsonify, request as req
 
 app = Flask(__name__)
+
+if db.connection is None:
+    db.init_connection()
 
 @app.route("/recommend/", methods = ["POST"])
 def recommend():
