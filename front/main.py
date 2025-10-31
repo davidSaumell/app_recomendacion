@@ -1,3 +1,6 @@
+import requests
+
+BASE_URL = "http://127.0.0.1:5000"
 NUMBER_OF_ANIMES_TO_RATE = 3
 username = input("Escribe tu nombre de usuario: ")
 password = input("Escribe tu contraseña: ")
@@ -40,9 +43,11 @@ while loop:
 
             counter += 1
 
-        # user_ratings
+        url = f"{BASE_URL}/recommend/"
+        requests.get(url, data=user_ratings)
 
     if option == 0:
         loop = False
+
     else:
         print("Opción no válida")
