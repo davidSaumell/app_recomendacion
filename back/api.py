@@ -6,17 +6,17 @@ app = Flask(__name__)
 @app.route("/recommend/", methods = ["GET"])
 def recommend():
     data = req.form.to_dict()
-    return RequestHandler.recommend(data)
+    return RequestHandler.get_recommendation(data)
 
 @app.route("/train/", methods = ["PATCH"])
 def train():
-    return RequestHandler.train()
+    return RequestHandler.train_model()
 
 @app.route("/version/", methods = ["GET"])
 def version():
-    return RequestHandler.version()
+    return RequestHandler.get_model_version()
 
 @app.route("/test/", methods = ["GET"])
 def test():
     data = {"11061": "10", "2476": "1"}
-    return RequestHandler.recommend(data)
+    return RequestHandler.get_recommendation(data)
