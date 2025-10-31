@@ -1,150 +1,114 @@
+import json
+import os
 import pandas as pd
-import numpy as np
+import random
 
-m_cols = ['anime_id', 'name']
-animes = pd.read_csv('..\\data\\anime.csv', usecols = m_cols)
-
-r_cols = ['user_id', 'anime_id', 'rating']
-ratings = pd.read_csv('..\\data\\rating.csv',  sep=',', usecols=r_cols)
-
-# Filtramos por ratings válidos (mayores a 0)
-ratings_filtrados = ratings[ratings['rating'] >= 0]
-
-anime_counts = ratings_filtrados.groupby('anime_id')['rating'].count()
-
-animes_populares = anime_counts[anime_counts > 100].index
-
-# Filtramos por número mínimo de ratings que tenga un anime
-ratings = ratings_filtrados[ratings_filtrados['anime_id'].isin(animes_populares)]
-
-
-# Eliminamos los duplicados para anime y ratings checkeando previamente si hay alguno en cada uno de los csv
-duplicates_ratings = ratings.duplicated(subset=['user_id', 'anime_id']).sum()
-if duplicates_ratings > 0:
-    dup_mask = ratings.duplicated(subset=['user_id', 'anime_id'], keep=False)
-
-duplicates_animes = animes.duplicated(subset=['anime_id', 'name']).sum()
-if duplicates_animes > 0:
-    dup_mask = animes.duplicated(subset=['anime_id', 'name'], keep=False)
-
-# Comprovamos que los rating negativos se hayan eliminado
-print("Mínimo rating:", ratings['rating'].min())
-ratings.head()
-# animes.head()
-
-counts_per_anime = ratings['anime_id'].value_counts()
-print(counts_per_anime.describe())
-
-for p in [50, 75, 90, 95, 99]:
-    print(f"P{p} =", int(counts_per_anime.quantile(p/100)))
-
-counts_per_user = ratings['user_id'].value_counts()
-print(counts_per_user.describe())
-
-for p in [50, 75, 90, 95, 99]:
-    print(f"P{p} =", int(counts_per_user.quantile(p/100)))
-
-# Comptem usuaris abans del filtre
-usuaris_abans = ratings['user_id'].nunique()
-
-# Apliquem filtre d'usuaris
+MIN_RATINGS_FOR_ANIME = 100
 MIN_RATINGS_USER = 5
-counts_user = ratings['user_id'].value_counts()
-valid_users = counts_user[counts_user >= MIN_RATINGS_USER].index
-ratings = ratings[ratings['user_id'].isin(valid_users)].copy()
+MIN_PERIODS_CORR = 100
 
-# Comptem usuaris i files després
-usuaris_despres = ratings['user_id'].nunique()
-files_despres = len(ratings)
+def Train_model():
+    os.makedirs("models", exist_ok=True)
 
-print("Usuaris abans del filtre:", usuaris_abans)
-print("Usuaris després del filtre:", usuaris_despres)
-print("Files totals després del filtre:", files_despres)
+    # READ MODEL VERSION #
+    version_file = "models/current_model.json"
+    if os.path.exists(version_file):
+        with open(version_file) as f:
+            info = json.load(f)
+        current_version = float(info["model_version"])
+        new_version = round(current_version + 0.1, 1)
+    else:
+        new_version = 1.0
 
-# percetantge de dades que he conservat
-percentatge = len(ratings) / len(ratings) * 100
-print(f"Percentatge de files conservades: {percentatge:.2f}%")
+    # GET DATA #
+    m_cols = ['anime_id', 'name']
+    animes = pd.read_csv('..\\data\\anime.csv', usecols = m_cols)
+    r_cols = ['user_id', 'anime_id', 'rating']
+    ratings = pd.read_csv('..\\data\\rating.csv',  sep=',', usecols=r_cols)
 
+    # FILTER #
+    ratings_filtrados = ratings[ratings['rating'] >= 0]
+    anime_counts = ratings_filtrados.groupby('anime_id')['rating'].count()
+    animes_populares = anime_counts[anime_counts > MIN_RATINGS_FOR_ANIME].index
+    ratings = ratings_filtrados[ratings_filtrados['anime_id'].isin(animes_populares)]
 
-MAX_RATINGS_USER = counts_user.quantile(0.99)  # ≈ 617
-valid_users = counts_user[
-    (counts_user >= 5) &
-    (counts_user <= MAX_RATINGS_USER)
-].index
+    duplicates_ratings = ratings.duplicated(subset=['user_id', 'anime_id']).sum()
+    if duplicates_ratings > 0:
+        ratings = ratings.drop_duplicates(subset=['user_id','anime_id'], keep='last')
+    duplicates_animes = animes.duplicated(subset=['anime_id', 'name']).sum()
+    if duplicates_animes > 0:
+        animes = animes.drop_duplicates(subset=['anime_id','name'], keep='last')
 
-ratings = ratings[ratings['user_id'].isin(valid_users)].copy()
-# Comptem usuaris i files després del filtre superior
-usuaris_despres2 = ratings['user_id'].nunique()
-files_despres2 = len(ratings)
+    counts_user = ratings['user_id'].value_counts()
+    MAX_RATINGS_USER = counts_user.quantile(0.99)  # 617
+    valid_users = counts_user[
+        (counts_user >= MIN_RATINGS_USER) &
+        (counts_user <= MAX_RATINGS_USER)
+    ].index
+    ratings = ratings[ratings['user_id'].isin(valid_users)].copy()
 
-print("Usuaris després del filtre superior:", usuaris_despres2)
-print("Files totals després del filtre superior:", files_despres2)
+    # CREATE CORRELATION #
+    animeRatings = ratings.pivot_table(index=['user_id'],columns=['anime_id'],values='rating')
+    corrMatrix = animeRatings.corr(method='pearson', min_periods=MIN_PERIODS_CORR)
 
-# Percentatge de files conservades respecte a l'original
-percentatge2 = len(ratings) / len(ratings) * 100
-print(f"Percentatge de files conservades: {percentatge2:.2f}%")
+    # CREATE MODEL #
+    model_path = f"models/anime_model_v{new_version:.1f}.pkl"
+    corrMatrix.to_pickle(model_path)
+    info = {
+        "model_version": f"{new_version:.1f}",
+        "artifact_path": model_path
+    }
+    with open(version_file, "w") as f:
+        json.dump(info, f, indent=4)
 
-perdua_usuaris = usuaris_abans - usuaris_despres2
-print(f"Usuaris eliminats en total: {perdua_usuaris}")
+def Load_model():
+    with open("models/current_model.json") as f:
+        info = json.load(f)
+    return pd.read_pickle(info["artifact_path"]) 
 
-animeRatings = ratings.pivot_table(index=['user_id'],columns=['anime_id'],values='rating')
-# animeRatings.head()
+def Get_recomendations(user_preferences):
+    corrMatrix = Load_model()
 
-HatsukoiRatings = animeRatings[7669]
-HatsukoiRatings = HatsukoiRatings.dropna()
-HatsukoiRatings.head()
+    converted_dict = {}
+    for k, v in user_preferences.items():
+        converted_dict[int(k)] = int(v)
 
-similarAnimesToHatsukoi = animeRatings.corrwith(HatsukoiRatings)
-similarAnimesToHatsukoi = similarAnimesToHatsukoi.dropna()
+    myRatings = pd.Series(user_preferences)
+    simCandidates = pd.Series(dtype='float64')
 
-df = pd.DataFrame(similarAnimesToHatsukoi)
-print(df.head(10))
+    for anime_id, rating in myRatings.items():
+        if anime_id not in corrMatrix.columns:
+            continue       
+        sims = corrMatrix[anime_id].dropna()
+        sims = sims.map(lambda x: x * rating)
+        simCandidates = pd.concat([simCandidates, sims])
 
-similarAnimesToHatsukoi.sort_values(ascending=False).head(40)
+    if simCandidates.empty:
+        return pd.DataFrame(columns=["anime_id", "score"])
 
-animeStatsNuevo = ratings.groupby('anime_id').agg({'rating': np.size})
-print(animeStatsNuevo.head(15))
+    simCandidates = simCandidates.groupby(simCandidates.index).sum()
+    simCandidates.sort_values(inplace=True, ascending=False)
+    filteredSims = simCandidates.drop(myRatings.index)
+    result = pd.DataFrame({"anime_id": filteredSims.index, "score": filteredSims.values})
+    return result[["anime_id", "score"]]
 
-animeStatsPromedo = ratings.groupby('anime_id').agg({'rating': np.mean})
-
-animeStatsPromedo = animeStatsPromedo.sort_values('rating', ascending=False)
-print(animeStatsPromedo.head(10))
-
-corrMatrix = animeRatings.corr(method='pearson', min_periods=100)
-# corrMatrix.head()
-
-myRatings = pd.Series({11061: 10, 2476: 1})
-
-simCandidates = pd.Series(dtype='float64')
-
-for anime_id, rating in myRatings.items():
-    print(f"Añadiendo animes similares a {anime_id}...")
+def Get_random_animes(n=10):
+    corrMatrix = Load_model()
+    valid_anime_ids = corrMatrix.columns.tolist()
     
-    # Recuperar los animes similares a los calificadas
-    sims = corrMatrix[anime_id].dropna()
+    n = min(n, len(valid_anime_ids))
+    sample_ids = random.sample(valid_anime_ids, n)
+    return sample_ids
+
+def Get_current_model_version():
+    version_file = "models/current_model.json"
+    if not os.path.exists(version_file):
+        return None, None
     
-    # Escalar la similaridad multiplicando la correlación por la calificación del usuario
-    sims = sims.map(lambda x: x * rating)
+    with open(version_file, "r") as f:
+        info = json.load(f)
     
-    # Añadir el puntaje a la lista de candidatos similares
-    simCandidates = pd.concat([simCandidates, sims])
-
-# Mirar los resultados
-print("Ordenando...")
-simCandidates = simCandidates.groupby(simCandidates.index).sum()  # Sumar puntuaciones duplicadas
-simCandidates.sort_values(inplace=True, ascending=False)
-filteredSims = simCandidates.drop(myRatings.index)
-print(filteredSims.head(10))
-
-# Convertir la Series en DataFrame para hacer merge
-simCandidates_df = filteredSims.reset_index()
-simCandidates_df.columns = ['anime_id', 'score']
-
-# Merge con el DataFrame de animes para obtener los nombres
-simCandidates_df = simCandidates_df.merge(animes, on='anime_id')
-
-# Reordenar columnas para legibilidad
-simCandidates_df = simCandidates_df[['anime_id', 'name', 'score']]
-
-# Mostrar las 10 recomendaciones principales con nombres
-simCandidates_df.head(10)
+    model_version = info.get("model_version")
+    artifact_path = info.get("artifact_path")
+    
+    return model_version, artifact_path
