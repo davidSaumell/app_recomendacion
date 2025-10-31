@@ -69,6 +69,10 @@ def Load_model():
 def Get_recomendations(user_preferences):
     corrMatrix = Load_model()
 
+    converted_dict = {}
+    for k, v in user_preferences.items():
+        converted_dict[int(k)] = int(v)
+
     myRatings = pd.Series(user_preferences)
     simCandidates = pd.Series(dtype='float64')
 
