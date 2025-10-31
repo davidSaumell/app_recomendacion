@@ -1,13 +1,110 @@
+import json
+import os
+import pandas as pd
+import random
+
+MIN_RATINGS_FOR_ANIME = 100
+MIN_RATINGS_USER = 5
+MIN_PERIODS_CORR = 100
+
 class RequestHandler:
+    def train_model():
+        os.makedirs("models", exist_ok=True)
 
-    def recommend():
-        pass
+        version_file = "models/current_model.json"
+        if os.path.exists(version_file):
+            with open(version_file) as f:
+                info = json.load(f)
+            current_version = float(info["model_version"])
+            new_version = round(current_version + 0.1, 1)
+        else:
+            new_version = 1.0
 
-    def train():
-        pass
+        m_cols = ['anime_id', 'name']
+        animes = pd.read_csv('..\\..\\data\\anime.csv', usecols = m_cols)
+        r_cols = ['user_id', 'anime_id', 'rating']
+        ratings = pd.read_csv('..\\..\\data\\rating.csv',  sep=',', usecols=r_cols)
 
-    def version():
-        pass
+        ratings_filtrados = ratings[ratings['rating'] >= 0]
+        anime_counts = ratings_filtrados.groupby('anime_id')['rating'].count()
+        animes_populares = anime_counts[anime_counts > MIN_RATINGS_FOR_ANIME].index
+        ratings = ratings_filtrados[ratings_filtrados['anime_id'].isin(animes_populares)]
 
-    def test():
-        pass
+        duplicates_ratings = ratings.duplicated(subset=['user_id', 'anime_id']).sum()
+        if duplicates_ratings > 0:
+            ratings = ratings.drop_duplicates(subset=['user_id','anime_id'], keep='last')
+        duplicates_animes = animes.duplicated(subset=['anime_id', 'name']).sum()
+        if duplicates_animes > 0:
+            animes = animes.drop_duplicates(subset=['anime_id','name'], keep='last')
+
+        counts_user = ratings['user_id'].value_counts()
+        MAX_RATINGS_USER = counts_user.quantile(0.99)
+        valid_users = counts_user[
+            (counts_user >= MIN_RATINGS_USER) &
+            (counts_user <= MAX_RATINGS_USER)
+        ].index
+        ratings = ratings[ratings['user_id'].isin(valid_users)].copy()
+
+        animeRatings = ratings.pivot_table(index=['user_id'],columns=['anime_id'],values='rating')
+        corrMatrix = animeRatings.corr(method='pearson', min_periods=MIN_PERIODS_CORR)
+
+        model_path = f"models/anime_model_v{new_version:.1f}.pkl"
+        corrMatrix.to_pickle(model_path)
+        info = {
+            "model_version": f"{new_version:.1f}",
+            "artifact_path": model_path
+        }
+        with open(version_file, "w") as f:
+            json.dump(info, f, indent=4)
+    
+    def load_model():
+        with open("models/current_model.json") as f:
+            info = json.load(f)
+        return pd.read_pickle(info["artifact_path"])
+    
+    def get_recommendation(user_preferences):
+        corrMatrix = RequestHandler.load_model()
+
+        converted_dict = {}
+        for k, v in user_preferences.items():
+            converted_dict[int(k)] = int(v)
+
+        myRatings = pd.Series(converted_dict)
+        simCandidates = pd.Series(dtype='float64')
+
+        for anime_id, rating in myRatings.items():
+            if anime_id not in corrMatrix.columns:
+                continue       
+            sims = corrMatrix[anime_id].dropna()
+            sims = sims.map(lambda x: x * rating)
+            simCandidates = pd.concat([simCandidates, sims])
+
+        if simCandidates.empty:
+            return pd.DataFrame(columns=["anime_id", "score"])
+
+        simCandidates = simCandidates.groupby(simCandidates.index).sum()
+        simCandidates.sort_values(inplace=True, ascending=False)
+        filteredSims = simCandidates.drop(myRatings.index)
+        result = pd.DataFrame({"anime_id": filteredSims.index, "score": filteredSims.values})
+        return result[["anime_id", "score"]].head(10)
+
+    def get_random_animes(n=10):
+        corrMatrix = RequestHandler.load_model()
+        valid_anime_ids = corrMatrix.columns.tolist()
+        
+        n = min(n, len(valid_anime_ids))
+        sample_ids = random.sample(valid_anime_ids, n)
+        return sample_ids
+
+    def get_model_version():
+        version_file = "models/current_model.json"
+        if not os.path.exists(version_file):
+            return None, None
+        
+        with open(version_file, "r") as f:
+            info = json.load(f)
+        
+        model_version = info.get("model_version")
+        artifact_path = info.get("artifact_path")
+        
+        return model_version, artifact_path

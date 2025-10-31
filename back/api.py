@@ -3,19 +3,25 @@ from flask import Flask, jsonify, request as req
 
 app = Flask(__name__)
 
-@app.route("/recommend", methods = ["GET"])
+@app.route("/recommend/", methods = ["POST"])
 def recommend():
-    data = req.get_json()
-    return RequestHandler.recommend(data)
+    data = req.form.to_dict()
+    df = RequestHandler.get_recommendation(data)
+    return jsonify(df.to_dict(orient="records"))
 
-@app.route("/train", methods = ["PATCH"])
+@app.route("/train/", methods = ["PATCH"])
 def train():
-    return RequestHandler.train
+    return RequestHandler.train_model()
 
-@app.route("/version", methods = ["GET"])
+@app.route("/version/", methods = ["GET"])
 def version():
-    return RequestHandler.version
+    return RequestHandler.get_model_version()
 
-@app.route("/test", methods = ["GET"])
+@app.route("/test/", methods = ["GET"])
 def test():
-    return RequestHandler.test
+    data = {"11061": "10", "2476": "1"}
+    return RequestHandler.get_recommendation(data)
+
+@app.route("/list-anime/", methods = ["GET"])
+def list_anime():
+    return jsonify(RequestHandler.get_random_animes())
