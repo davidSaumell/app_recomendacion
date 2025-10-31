@@ -25,9 +25,9 @@ def check_rating(rating):
 
 loop = True
 while loop:
-    print(showMenu)
+    print(showMenu())
     option = input("Elija la opción: ")
-    if option == 1:
+    if option == "1":
         user_ratings = {}
         counter = 0
         while counter < NUMBER_OF_ANIMES_TO_RATE:
@@ -46,7 +46,7 @@ while loop:
         url = f"{BASE_URL}/recommend/"
         requests.get(url, data=user_ratings)
 
-    if option == 0:
+    if option == "0":
         loop = False
 
     else:
