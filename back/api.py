@@ -3,10 +3,11 @@ from flask import Flask, jsonify, request as req
 
 app = Flask(__name__)
 
-@app.route("/recommend/", methods = ["GET"])
+@app.route("/recommend/", methods = ["POST"])
 def recommend():
     data = req.form.to_dict()
-    return RequestHandler.get_recommendation(data)
+    df = RequestHandler.get_recommendation(data)
+    return jsonify(df.to_dict(orient="records"))
 
 @app.route("/train/", methods = ["PATCH"])
 def train():

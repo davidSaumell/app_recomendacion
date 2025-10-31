@@ -69,7 +69,7 @@ class RequestHandler:
         for k, v in user_preferences.items():
             converted_dict[int(k)] = int(v)
 
-        myRatings = pd.Series(user_preferences)
+        myRatings = pd.Series(converted_dict)
         simCandidates = pd.Series(dtype='float64')
 
         for anime_id, rating in myRatings.items():
@@ -86,7 +86,7 @@ class RequestHandler:
         simCandidates.sort_values(inplace=True, ascending=False)
         filteredSims = simCandidates.drop(myRatings.index)
         result = pd.DataFrame({"anime_id": filteredSims.index, "score": filteredSims.values})
-        return result[["anime_id", "score"]]
+        return result[["anime_id", "score"]].head(10)
 
     def get_random_animes(n=10):
         corrMatrix = RequestHandler.load_model()

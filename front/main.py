@@ -54,7 +54,16 @@ while loop:
             counter += 1
 
         url = f"{BASE_URL}/recommend/"
-        response = requests.get(url, data=user_ratings)
+        response = requests.post(url, data=user_ratings)
+
+        if response.ok:
+            recommendations = response.json()
+            print("\nTop 10 recomendaciones:")
+            max_id_length = max(len(str(rec['anime_id'])) for rec in recommendations)
+            for i, rec in enumerate(recommendations, start=1):
+                print(f"{i:2d}. Anime ID: {rec['anime_id']:{max_id_length}d}  |  Score: {rec['score']:.2f}")
+        else:
+            print("Error:", response.text)
 
     elif option == "2":
         url = f"{BASE_URL}/train/"
