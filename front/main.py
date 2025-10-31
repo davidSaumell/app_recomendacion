@@ -6,7 +6,7 @@ NUMBER_OF_ANIMES_TO_RATE = 3
 username = input("Escribe tu nombre de usuario: ")
 password = input("Escribe tu contraseña: ")
 
-def showMenu():
+def show_menu():
     menu = ("\033[33m1.- Obtener recomendaciones.\n"
         "2.- Entrenar el algoritmo.\n"
         "3.- Obtener la versión.\n"
@@ -26,7 +26,7 @@ def check_rating(rating):
 
 loop = True
 while loop:
-    print(showMenu())
+    print(show_menu())
     option = input("Elija la opción: ")
     if option == "1":
         user_ratings = {}
@@ -45,8 +45,20 @@ while loop:
             counter += 1
 
         url = f"{BASE_URL}/recommend/"
-        requests.get(url, data=user_ratings)
+        response = requests.get(url, data=user_ratings)
 
+    elif option == "2":
+        url = f"{BASE_URL}/train/"
+        response = requests.get(url)
+
+    elif option == "3":
+        url = f"{BASE_URL}/version/"
+        response = requests.get(url)
+
+    elif option == "4":
+        url = f"{BASE_URL}/test/"
+        response = requests.get(url)
+    
     elif option == "0":
         loop = False
 
