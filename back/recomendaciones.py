@@ -1,6 +1,7 @@
 import json
 import os
 import pandas as pd
+import random
 
 MIN_RATINGS_FOR_ANIME = 100
 MIN_RATINGS_USER = 5
@@ -86,3 +87,11 @@ def Get_recomendations(user_preferences):
     filteredSims = simCandidates.drop(myRatings.index)
     result = pd.DataFrame({"anime_id": filteredSims.index, "score": filteredSims.values})
     return result[["anime_id", "score"]]
+
+def Get_random_animes(n=10):
+    corrMatrix = Load_model()
+    valid_anime_ids = corrMatrix.columns.tolist()
+    
+    n = min(n, len(valid_anime_ids))
+    sample_ids = random.sample(valid_anime_ids, n)
+    return sample_ids
