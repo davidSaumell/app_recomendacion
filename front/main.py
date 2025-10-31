@@ -31,18 +31,25 @@ while loop:
     if option == "1":
 
         url = f"{BASE_URL}/list-anime/"
-        anime_list = requests.get(url)
+        response = requests.get(url)
 
-        print(anime_list) #TODO: delete print
-
-        for anime in anime_list:
+        anime_JSON = response.json()
+        for anime in anime_JSON:
             print(anime)
 
         user_ratings = {}
         counter = 0
         while counter < NUMBER_OF_ANIMES_TO_RATE:
-            # TODO: Add check_anime_id
-            anime_id = input("Escriba el id del anime a valorar: ")
+            loop = True
+            while loop:
+                anime_id = input("Escriba el id del anime a valorar: ")
+                if anime_id.isnumeric():
+                    if int(anime_id) in anime_JSON:
+                        loop = False
+                    else:
+                        print("ID no encontrado")
+                else:
+                    print("Respuesta no válida")
 
             correct_rating = False
             while correct_rating == False:
