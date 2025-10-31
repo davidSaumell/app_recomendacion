@@ -95,3 +95,16 @@ def Get_random_animes(n=10):
     n = min(n, len(valid_anime_ids))
     sample_ids = random.sample(valid_anime_ids, n)
     return sample_ids
+
+def Get_current_model_version():
+    version_file = "models/current_model.json"
+    if not os.path.exists(version_file):
+        return None, None
+    
+    with open(version_file, "r") as f:
+        info = json.load(f)
+    
+    model_version = info.get("model_version")
+    artifact_path = info.get("artifact_path")
+    
+    return model_version, artifact_path
