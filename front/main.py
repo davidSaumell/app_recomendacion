@@ -49,7 +49,7 @@ while loop:
 
     elif option == "2":
         url = f"{BASE_URL}/train/"
-        response = requests.get(url)
+        response = requests.patch(url)
 
     elif option == "3":
         url = f"{BASE_URL}/version/"
