@@ -21,9 +21,9 @@ class RequestHandler:
             new_version = 1.0
 
         m_cols = ['anime_id', 'name']
-        animes = pd.read_csv('..\\data\\anime.csv', usecols = m_cols)
+        animes = pd.read_csv('..\\..\\data\\anime.csv', usecols = m_cols)
         r_cols = ['user_id', 'anime_id', 'rating']
-        ratings = pd.read_csv('..\\data\\rating.csv',  sep=',', usecols=r_cols)
+        ratings = pd.read_csv('..\\..\\data\\rating.csv',  sep=',', usecols=r_cols)
 
         ratings_filtrados = ratings[ratings['rating'] >= 0]
         anime_counts = ratings_filtrados.groupby('anime_id')['rating'].count()
