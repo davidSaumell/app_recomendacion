@@ -29,6 +29,15 @@ while loop:
     print(show_menu())
     option = input("Elija la opción: ")
     if option == "1":
+
+        url = f"{BASE_URL}/list-anime/"
+        anime_list = requests.get(url)
+
+        print(anime_list) #TODO: delete print
+
+        for anime in anime_list:
+            print(anime)
+
         user_ratings = {}
         counter = 0
         while counter < NUMBER_OF_ANIMES_TO_RATE:

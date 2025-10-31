@@ -20,3 +20,7 @@ def version():
 def test():
     data = {"11061": "10", "2476": "1"}
     return RequestHandler.get_recommendation(data)
+
+@app.route("/list-anime/", methods = ["GET"])
+def list_anime():
+    return jsonify(RequestHandler.get_random_animes())
