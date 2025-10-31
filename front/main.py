@@ -45,17 +45,19 @@ while loop:
             counter += 1
 
         url = f"{BASE_URL}/recommend/"
-        requests.get(url, data=user_ratings)
+        response = requests.get(url, data=user_ratings)
 
     elif option == "2":
-        pass
+        url = f"{BASE_URL}/train/"
+        response = requests.get(url)
 
     elif option == "3":
-        pass
+        url = f"{BASE_URL}/version/"
+        response = requests.get(url)
 
     elif option == "4":
         url = f"{BASE_URL}/test/"
-        requests.get(url)
+        response = requests.get(url)
     
     elif option == "0":
         loop = False
