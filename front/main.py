@@ -1,4 +1,5 @@
 import requests
+from flask import jsonify
 
 BASE_URL = "http://127.0.0.1:5000"
 NUMBER_OF_ANIMES_TO_RATE = 3
@@ -46,7 +47,7 @@ while loop:
         url = f"{BASE_URL}/recommend/"
         requests.get(url, data=user_ratings)
 
-    if option == "0":
+    elif option == "0":
         loop = False
 
     else:

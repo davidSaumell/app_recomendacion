@@ -5,7 +5,8 @@ app = Flask(__name__)
 
 @app.route("/recommend/", methods = ["GET"])
 def recommend():
-    return RequestHandler.recommend()
+    data = req.form.to_dict()
+    return RequestHandler.recommend(data)
 
 @app.route("/train/", methods = ["PATCH"])
 def train():
@@ -17,4 +18,5 @@ def version():
 
 @app.route("/test/", methods = ["GET"])
 def test():
-    return RequestHandler.test()
+    data = {"11061": "10", "2476": "1"}
+    return RequestHandler.recommend(data)
