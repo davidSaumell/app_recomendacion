@@ -1,7 +1,8 @@
 class User:
 
-    def __init__(self, userid, password):
+    def __init__(self, username, password, userid = -1):
         self.set_userid(userid)
+        self.set_username(username)
         self.set_password(password)
 
     def get_userid(self):
@@ -9,6 +10,12 @@ class User:
     
     def set_userid(self, userid):
         self.__userid = userid
+
+    def get_username(self):
+        return self.__username
+    
+    def set_username(self, username):
+        self.username = username
     
     def get_password(self):
         return self.__password
