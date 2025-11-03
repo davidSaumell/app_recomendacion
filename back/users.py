@@ -15,7 +15,7 @@ class User:
         return self.__username
     
     def set_username(self, username):
-        self.username = username
+        self.__username = username
     
     def get_password(self):
         return self.__password
