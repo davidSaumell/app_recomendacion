@@ -12,6 +12,7 @@ class usersDAO:
 
         return user
     
+    @staticmethod
     def read_users():
         query = "SELECT * FROM users"
         cursor = db.connection.cursor()
