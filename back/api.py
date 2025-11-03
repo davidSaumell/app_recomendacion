@@ -30,4 +30,5 @@ def test():
 
 @app.route("/list-anime/", methods = ["GET"])
 def list_anime():
-    return jsonify(RequestHandler.get_random_animes())
+    df = RequestHandler.get_random_animes()
+    return jsonify(df.to_dict(orient="records"))
