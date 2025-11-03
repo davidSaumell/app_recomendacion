@@ -27,11 +27,22 @@ def check_rating(rating):
 def show_recommendation_data(response):
     if response.ok:
         recommendations = response.json()
-        print("\nTop 10 recomendaciones:")
+        if not recommendations:
+            print("\nNo se generaron recomendaciones.")
+            return
+
+        print("\nTop 10 recomendaciones:\n")
         max_id_length = max(len(str(rec['anime_id'])) for rec in recommendations)
+        max_name_length = max(len(rec.get('name', '')) for rec in recommendations)
+
+        header = f"\033[1m{'N°':<3} | {'ID':<{max_id_length}} | {'Nombre':<{max_name_length}} | {'Score'}\033[0m"
+        print(header)
+        print("-" * len(header))
+        
         for i, rec in enumerate(recommendations, start=1):
-            print(f"{i:2d}. Anime ID: {rec['anime_id']:{max_id_length}d}  |  Score: {rec['score']:.2f}")
-    else:
+            name = rec.get('name', 'Desconocido')
+            print(f"{i:2d}. | {rec['anime_id']:{max_id_length}d} | {name:<{max_name_length}} | {rec['score']:.2f}")
+    else:   
         print("Error:", response.text)
 
 loop = True
@@ -42,19 +53,23 @@ while loop:
         url = f"{BASE_URL}/list-anime/"
         response = requests.get(url)
 
-        anime_JSON = response.json()
-        for anime in anime_JSON:
-            print(anime)
+        if response.ok:
+            anime_JSON = response.json()
+            for anime in anime_JSON:
+                print(f"{anime['anime_id']} - {anime['name']}")
+        else:
+            print("Error al obtener la lista de animes:", response.text)
 
         user_ratings = {}
         counter = 0
         while counter < NUMBER_OF_ANIMES_TO_RATE:
-            loop = True
-            while loop:
+            correct_anime_rating = True
+            while correct_anime_rating:
                 anime_id = input("Escriba el id del anime a valorar: ")
                 if anime_id.isnumeric():
-                    if int(anime_id) in anime_JSON:
-                        loop = False
+                    valid_anime_ids = {anime['anime_id'] for anime in anime_JSON}
+                    if int(anime_id) in valid_anime_ids:
+                        correct_anime_rating = False
                     else:
                         print("ID no encontrado")
                 else:
