@@ -25,7 +25,8 @@ def version():
 @app.route("/test/", methods = ["GET"])
 def test():
     data = {"11061": "10", "2476": "1"}
-    return RequestHandler.get_recommendation(data)
+    df = RequestHandler.get_recommendation(data)
+    return jsonify(df.to_dict(orient="records"))
 
 @app.route("/list-anime/", methods = ["GET"])
 def list_anime():
