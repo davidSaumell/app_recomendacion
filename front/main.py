@@ -80,6 +80,15 @@ while loop:
         url = f"{BASE_URL}/version/"
         response = requests.get(url)
 
+        if response.ok:
+            data = response.json()
+            
+            print("\nModelo actual:")
+            print(f"Version: {data.get('model_version', 'Desconocida')}")
+            print(f"Ruta: {data.get('artifact_path', 'No disponible')}\n")
+        else:
+            print("Error: ", response.text)
+
     elif option == "4":
         url = f"{BASE_URL}/test/"
         response = requests.get(url)
