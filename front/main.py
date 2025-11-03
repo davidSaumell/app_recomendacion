@@ -17,7 +17,7 @@ while loop:
     if len(response.json) == 0:
         answer = input("Usuario no encontrado, quieres crearlo? S/N")
         if answer.casefold() == "s":
-            url = f"{BASE_URL}/login/"
+            url = f"{BASE_URL}/signup/"
             response = requests.post(url, data=login_data)
             loop = False
     else:

@@ -1,3 +1,5 @@
+from users import User
+from usersDAO import usersDAO
 import connection as db
 from requestHandler import RequestHandler
 from flask import Flask, jsonify, request as req
@@ -29,3 +31,19 @@ def test():
 @app.route("/list-anime/", methods = ["GET"])
 def list_anime():
     return jsonify(RequestHandler.get_random_animes())
+
+@app.route("/login/", methods = ["POST"])
+def login():
+    data = req.form.to_dict()
+    username = data[0]
+    password = data[1]
+    user = User(username, password)
+    return jsonify(usersDAO.read_user(user))
+
+@app.route("/signup/", methods = ["POST"])
+def signup():
+    data = req.form.to_dict()
+    username = data[0]
+    password = data[1]
+    user = User(username, password)
+    return jsonify(usersDAO.create_user(user))
