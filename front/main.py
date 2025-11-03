@@ -4,8 +4,24 @@ from flask import jsonify
 BASE_URL = "http://127.0.0.1:5000"
 NUMBER_OF_ANIMES_TO_RATE = 3
 
-username = input("Escribe tu nombre de usuario: ")
-password = input("Escribe tu contraseña: ")
+loop = True
+while loop:
+    username = input("Escribe tu nombre de usuario: ")
+    password = input("Escribe tu contraseña: ")
+
+    login_data = [username, password]
+
+    url = f"{BASE_URL}/login/"
+    response = requests.post(url, data=login_data)
+
+    if len(response.json) == 0:
+        answer = input("Usuario no encontrado, quieres crearlo? S/N")
+        if answer.casefold() == "s":
+            url = f"{BASE_URL}/login/"
+            response = requests.post(url, data=login_data)
+            loop = False
+    else:
+        loop = False
 
 def show_menu():
     menu = ("\033[33m1.- Obtener recomendaciones.\n"
