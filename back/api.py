@@ -15,7 +15,12 @@ def train():
 
 @app.route("/version/", methods = ["GET"])
 def version():
-    return RequestHandler.get_model_version()
+    model_version, artifact_path = RequestHandler.get_model_version()
+    
+    return jsonify({
+        "model_version": model_version,
+        "artifact_path": artifact_path
+    })
 
 @app.route("/test/", methods = ["GET"])
 def test():
