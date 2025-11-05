@@ -15,7 +15,7 @@ class usersDAO:
     @staticmethod
     def read_user(user):
         query = "SELECT * FROM users WHERE userName = %s AND password = %s"
-        values = (user.get_username(), user.getpassword())
+        values = (user.get_username(), user.get_password())
         cursor = db.connection.cursor()
         cursor.execute(query, values)
         
