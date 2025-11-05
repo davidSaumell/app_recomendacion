@@ -39,20 +39,27 @@ def login():
     password = data["password"]
     user = User(username, password)
     users = usersDAO.read_user(user)
-    user_JSON = []
+    users_JSON = []
     for user in users:
-        user_JSON.append({
+        users_JSON.append({
             "userid": user.get_userid(), 
             "username": user.get_username(), 
             "password": user.get_password()
             })
 
-    return jsonify(user_JSON)
+    return jsonify(users_JSON)
 
 @app.route("/signup/", methods = ["POST"])
 def signup():
     data = req.form.to_dict()
-    username = data.values()[0]
-    password = data.values()[1]
+    username = data["username"]
+    password = data["password"]
     user = User(username, password)
-    return jsonify(usersDAO.create_user(user))
+    user = usersDAO.create_user(user)
+    user_JSON = [{
+            "userid": user.get_userid(), 
+            "username": user.get_username(), 
+            "password": user.get_password()
+            }]
+
+    return jsonify(user_JSON)

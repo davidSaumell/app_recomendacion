@@ -5,9 +5,10 @@ class usersDAO:
 
     @staticmethod
     def create_user(user):
-        query = "INSERT INTO users (userName, password) VALUES %s, %s"
+        query = "INSERT INTO users (userName, password) VALUES (%s, %s)"
         cursor = db.connection.cursor()
-        cursor.execute(query, user.get_username(), user.get_password())
+        values = (user.get_username(), user.get_password())
+        cursor.execute(query, values)
         db.connection.commit()
 
         return user
