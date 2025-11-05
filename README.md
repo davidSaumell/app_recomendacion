@@ -15,7 +15,7 @@ Un sistema de recomendación de anime basado en filtrado colaborativo, implement
 - CLI interactiva para probar el sistema (sin necesidad de interfaz web).  
 
 ## Iniciar Backend ⚙️
-1. Instalar librerias necesarias
+1. Instalar librerías necesarias
    1. `pip install pandas`
    2. `pip install flask`
 3. Iniciar el servidor Backend
