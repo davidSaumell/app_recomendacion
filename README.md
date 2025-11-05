@@ -12,9 +12,26 @@ Un sistema de recomendación de anime basado en filtrado colaborativo, implement
 
 - Endpoint REST con Flask para interactuar con el modelo.
 
-- CLI interactiva para probar el sistema (sin necesidad de interfaz web).  
+- CLI interactiva para probar el sistema (sin necesidad de interfaz web).
+
+## Base de Datos
+1. Para tener una base de datos con la mínima información, ejecute el siguiente script:
+```
+create schema IF NOT EXISTS anime_recomendation;
+
+DROP TABLE IF EXISTS `users`;
+create table users (
+	idUser INT NOT NULL AUTO_INCREMENT,
+    userName varchar(45),
+    password varchar(45),
+    CONSTRAINT PK_USERS primary key (idUser)
+);
+
+insert into Users (userName, password) values ('admin', 'admin');
+```
 
 ## Iniciar Backend ⚙️
+El programa utiliza funciones de MySQL para realizar la conexión con la base de datos, éste solicitará el usuario y contraseña para acceder a ella.  
 1. Instalar librerías necesarias
    1. `pip install pandas`
    2. `pip install flask`
@@ -34,7 +51,7 @@ Estos datos deberán estar guardados a la misma altura que la raíz del programa
 <img width="188" height="69" alt="image" src="https://github.com/user-attachments/assets/02757531-0f02-479f-b88e-04cdc765d7fb" />
 
 1. anime.csv
-   1. Visitar [anime.csv](https://www.kaggle.com/datasets/CooperUnion/anime-recommendations-database)
+   1. Visitar [anime.csv](https://www.kaggle.com/datasets/CooperUnion/anime-recommendations-database/data?select=anime.csv)
    2. Descargar `anime.csv` <img width="1226" height="602" alt="anime_csv_download" src="https://github.com/user-attachments/assets/041e4551-f4d4-46c4-8491-1eb410dbe079" />
 2. ratings.csv
    1. Visitar [ratings.csv](https://www.kaggle.com/datasets/CooperUnion/anime-recommendations-database/data?select=rating.csv)
