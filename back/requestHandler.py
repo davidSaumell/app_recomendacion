@@ -86,7 +86,8 @@ class RequestHandler:
         simCandidates.sort_values(inplace=True, ascending=False)
         filteredSims = simCandidates.drop(myRatings.index)
         result = pd.DataFrame({"anime_id": filteredSims.index, "score": filteredSims.values})
-        return result[["anime_id", "score"]].head(10)
+        result = RequestHandler.add_anime_names(result)
+        return result[["anime_id", "name","score"]].head(10)
 
     def get_random_animes(n=10):
         corrMatrix = RequestHandler.load_model()
@@ -94,7 +95,10 @@ class RequestHandler:
         
         n = min(n, len(valid_anime_ids))
         sample_ids = random.sample(valid_anime_ids, n)
-        return sample_ids
+        
+        sample_animes = pd.DataFrame({'anime_id': sample_ids})
+        sample_animes = RequestHandler.add_anime_names(sample_animes)
+        return sample_animes[['anime_id', 'name']]
 
     def get_model_version():
         version_file = "models/current_model.json"
@@ -108,3 +112,17 @@ class RequestHandler:
         artifact_path = info.get("artifact_path")
         
         return model_version, artifact_path
+    
+    def add_anime_names(df):
+        animes = pd.read_csv('..\\..\\data\\anime.csv', usecols=['anime_id', 'name'])
+        
+        animes['anime_id'] = animes['anime_id'].astype(int)
+        df['anime_id'] = df['anime_id'].astype(int)
+
+        df = df.merge(animes, on='anime_id', how='left')
+
+        if 'score' in df.columns:
+            df = df[['anime_id', 'name', 'score']]
+        else:
+            df = df[['anime_id', 'name']]
+        return df
