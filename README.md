@@ -31,22 +31,24 @@ insert into Users (userName, password) values ('admin', 'admin');
 ```
 
 ## Iniciar Backend ⚙️
-El programa utiliza funciones de MySQL para realizar la conexión con la base de datos, éste solicitará el usuario y contraseña para acceder a ella.  
+El programa utiliza funciones de MySQL para realizar la conexión con la base de datos, solicitará el usuario y contraseña para acceder a ella.  
 1. Instalar librerías necesarias
    1. `pip install pandas`
    2. `pip install flask`
 3. Iniciar el servidor Backend
    1. Abrir un terminal dentro de la carpeta `back`
-   2. Ejecutar: `flask --app api.py run`
-4. El servidor se iniciará por defecto en:
-   `http://127.0.0.1:5000`  
+   2. Ejecutar: `python -m flask --app api.py run`
+   3. Introducir las credenciales de la base de datos.
+
+El servidor se iniciará por defecto en: `http://127.0.0.1:5000`
 
 ## Iniciar Frontend 💻
 1. Abrir un terminal dentro de la carpeta `front`
-2. Ejecutar: python main.py  
+2. Ejecutar: `python main.py`  
 
 ## Obtener los datos
 Necesitaremos tener dos csv para poder obtener los datos y dar una recomendación al usuario en función del resto de usuarios que ya han valorado los animes.  
+  
 Estos datos deberán estar guardados a la misma altura que la raíz del programa en una carpeta llamada data.  
 <img width="188" height="69" alt="image" src="https://github.com/user-attachments/assets/02757531-0f02-479f-b88e-04cdc765d7fb" />
 
