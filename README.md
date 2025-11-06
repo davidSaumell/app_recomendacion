@@ -19,6 +19,8 @@ Un sistema de recomendación de anime basado en filtrado colaborativo, implement
 ```
 create schema IF NOT EXISTS anime_recomendation;
 
+USE anime_recommendation;
+
 DROP TABLE IF EXISTS `users`;
 create table users (
 	idUser INT NOT NULL AUTO_INCREMENT,
